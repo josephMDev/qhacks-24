@@ -13,7 +13,7 @@ if input_filename[-3:] != 'wav':
     print('WARNING!! Input File format should be *.wav')
     sys.exit()
 
-samrate, data = wavfile.read(str('./qhacks-24/wav-to-csv/wavfile/' + input_filename))
+samrate, data = wavfile.read(str('/qhacks-24/wav-to-csv/wavfile/' + input_filename))
 print('Load is Done! \n')
 
 wavData = pd.DataFrame(data)
