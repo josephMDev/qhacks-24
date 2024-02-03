@@ -26,7 +26,7 @@ def toCSV(inFile : str) :
         print('Saving...\n')
         #stereo_R.to_csv(str(inFile[:-4] + "./src/data/_Output_stereo_R.csv"), mode='w')
         #stereo_L.to_csv(str(inFile[:-4] + "./src/data/_Output_stereo_L.csv"), mode='w')
-        wavData.to_csv("./src/data/Output_stereo_RLTEST.csv", mode='w')
+        wavData.to_csv("./src/data/Output_stereo_RLTEST.csv", header=False, index=False, mode='w')
         #print('Save is done ' + str(inFile[:-4]) + './src/data/_Output_stereo_R.csv , '
                             #+ str(inFile[:-4]) + './src/data/_Output_stereo_L.csv')
 
