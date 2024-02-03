@@ -1,3 +1,5 @@
 scipy
 pandas
 flask
+librosa
+os
