@@ -27,7 +27,8 @@ class Resampler():
 
     def to16k(self):
         self.fun16k_counter += 1
-        new_name = "./src/data/DS_"+self.file[-5]+str(self.fun16k_counter)+".wav"
+        #new_name = "./src/data/DS_"+self.file[:-4]+"_"+str(self.fun16k_counter)+".wav"
+        new_name = self.file[:-4]+"_"+"16k"+"_"+str(self.fun16k_counter)+".wav"
         try:
             audio_signal, sample_rate = librosa.load(self.file, sr=16000)
             sf.write(file=new_name, data=audio_signal, samplerate=sample_rate)
@@ -36,12 +37,13 @@ class Resampler():
 
     def to8k(self):
         self.fun8k_counter += 1
-        new_name = "./src/data/DS_"+self.file[-5]+str(self.fun8k_counter)+".wav"
+        #new_name = "./src/data/DS_"+self.file[:-4]+"_"+str(self.fun8k_counter)+".wav"
+        new_name = self.file[:-4]+"_"+"8k"+"_"+str(self.fun8k_counter)+".wav"
         try:
             audio_signal, sample_rate = librosa.load(self.file, sr=8000)
             sf.write(file=new_name, data=audio_signal, samplerate=sample_rate)
         except:
             print("Something went wrong, cannot downsample to 8k Hz")
 
-res = Resampler('./src/data/stereo_44100.wav')
-res.to16k()
+#res = Resampler('./src/data/stereo_44100.wav')
+#res.to16k()
