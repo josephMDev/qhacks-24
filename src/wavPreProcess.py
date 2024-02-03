@@ -45,5 +45,5 @@ class Resampler():
         except:
             print("Something went wrong, cannot downsample to 8k Hz")
 
-#res = Resampler('./src/data/stereo_44100.wav')
-#res.to16k()
+res = Resampler('./src/data/input/stereo_44100.wav')
+res.to8k()

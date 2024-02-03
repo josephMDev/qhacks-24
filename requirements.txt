@@ -4,3 +4,4 @@ flask
 librosa
 os
 soundfile
+asteroid

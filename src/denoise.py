@@ -3,7 +3,7 @@ import numpy as np
 import soundfile as sf
 #from pesq import pesq
 
-from denoise_model.pns.noise_suppressor import NoiseSuppressor
+from fourier_transform.pns.noise_suppressor import NoiseSuppressor
 
 
 def main():
