@@ -3,3 +3,4 @@ pandas
 flask
 librosa
 os
+soundfile
