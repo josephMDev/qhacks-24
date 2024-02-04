@@ -1,5 +1,5 @@
 import ffmpeg
-import src.voiceIsoModel as iso
+import voiceIsoModel as iso
 from os import listdir
 
 class VideoAudioProcessesor():
@@ -29,11 +29,11 @@ class VideoAudioProcessesor():
         try:
             baseName = noisyWavPath[17:-4] + "_est" + str(isoChannel) + ".wav"
         # Get the list of items in the directory
-            files = listdir('./src/data/output/')
+            files = listdir('./data/output/')
 
             for file in files:
                 if file == baseName:
-                    return './src/data/output/' + file
+                    return './data/output/' + file
             return "Error"
         except FileNotFoundError:
             print(f"Directory not found: {baseName}")
@@ -43,17 +43,18 @@ class VideoAudioProcessesor():
         audio = ffmpeg.input(audPath)
         ffmpeg.output(video, audio, outPath, vcodec='copy', acodec='aac', strict='experimental').run()
     
-
-vpe = VideoAudioProcessesor('./src/data/input/curry_interview.mp4')
-vpe.mp4ToWav('./src/data/input/mutedCurryVid.mp4', './src/data/input/curry.wav')
+''' USAGE
+vpe = VideoAudioProcessesor('./data/input/curry_interview.mp4')
+vpe.mp4ToWav('./data/input/mutedCurryVid.mp4', './data/input/curry.wav')
 #process - aud
-vpe.processWav('./src/data/input/curry.wav')
-iso_wav_1 = vpe.loadIsoWav('./src/data/input/curry.wav', 1)
-#iso_wav_2 = vpe.loadIsoWav('./src/data/input/curry.wav', 2)
+vpe.processWav('./data/input/curry.wav')
+iso_wav_1 = vpe.loadIsoWav('./data/input/curry.wav', 1)
+#iso_wav_2 = vpe.loadIsoWav('./data/input/curry.wav', 2)
 
-vpe.recodeMp4('./src/data/input/mutedCurryVid.mp4', iso_wav_1, './src/data/output/curry_merged.mp4')
+vpe.recodeMp4('./data/input/mutedCurryVid.mp4', iso_wav_1, './data/output/curry_merged.mp4')
 
     # maybe do something like below (async):
+    '''
 """
     self._video = ffmpeg.run_async(
             stream, quiet=True, overwrite_output=overwrite

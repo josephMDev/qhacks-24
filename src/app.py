@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 
+from transcription import transcribe
+
 app = Flask(__name__)
 
 @app.route('/process_input', methods=['POST'])

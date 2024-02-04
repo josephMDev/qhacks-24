@@ -5,3 +5,5 @@ librosa
 soundfile
 asteroid
 ffmpeg-python
+speech_recognition
+pydub
