@@ -7,3 +7,8 @@ asteroid
 ffmpeg-python
 speech_recognition
 pydub
+sqlalchemy=1.4.41
+flask_sqlalchemy
+openai
+json
+uuid
