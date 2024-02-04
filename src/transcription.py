@@ -9,7 +9,7 @@ def find_start_time(audio):
 
     return 0  # If no suitable start time is found, default to 0
 
-def transcribe(audio_file_path, lang="en-US"):
+def transcribe(audio_file_path, lang="English"):
     languages = {"English": "en-US",
                 "French": "fr-FR",
                 "Spanish": "es-ES",
@@ -26,7 +26,6 @@ def transcribe(audio_file_path, lang="en-US"):
 
     try:
         text = recognizer.recognize_google(audio_data, language=languages[lang])
-        print("Transcription: ", text)
 
         # Get the timestamp for each word
         word_durations = []

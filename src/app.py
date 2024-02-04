@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from utils import summarize_prompt, get_category, get_image
 
 from transcription import transcribe
+from pipeline import VideoAudioProcessesor
 
 from openai import OpenAI
 client = OpenAI(api_key="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")
@@ -95,16 +96,32 @@ def create_user():
 def upload_video():
     video_id = str(uuid.uuid4())
     bytesOfVideo = request.get_data()
-    video_url = f"./qhacks-24/src/storage/videos/{video_id}.mp4"
+    video_url = f"./data/input/{video_id}.mp4"
     with open(video_url, 'wb') as out:
         out.write(bytesOfVideo)
 
     user_id = request.args.get('user_id')
 
     # HERE WE WILL RUN THE PIPELINE TO PROCESS THE VIDEO
+    # process video
+    vpe = VideoAudioProcessesor(f'./data/input/{video_id}.mp4')
+    vpe.mp4ToWav(f'./data/input/{video_id}_muted.mp4', f'./data/input/{video_id}_noisy.wav')
+    
+    # process audio
+    vpe.processWav(f'./data/input/{video_id}_noisy.wav')
+    iso_wav_1 = vpe.loadIsoWav(f'./data/input/{video_id}_noisy.wav', 1)
+    #iso_wav_2 = vpe.loadIsoWav(f'./data/input/{video_id}_noisy.wav', 2)
+
+
+    # MULTITHREAD THESE
+    vpe.recodeMp4(f'./data/input/{video_id}_muted.mp4', iso_wav_1, f'./data/output/{video_id}_merged.mp4')
+    word_durations = transcribe(iso_wav_1)
+
     print(user_id, video_url)
 
-    testprompt = "The last video I put out was about the index of refraction. It talked about why light slows down when it passes through a medium, and in particular, why the rate of slowdown would depend on color. It turns out people have a lot of questions about the index of refraction, and in this supplemental video I wanted to take a chance to answer a couple of them. For example, how is it possible for this index to be lower than one, which seems to imply that light would travel faster than the speed of light through some materials. To kick things off though, I want to take a question that does not require too much background, asked by Kevin O'Toole, which is why exactly light slowing down would imply that it bends as it enters a medium. There's a common analogy, which is to think of something like a car or a tank, where it turns a little bit while one side of it slows down before the other, and although it's a very visceral and memorable analogy, it's not like light has wheels, and it also tells you nothing about how to be more quantitative. Derive the formula describing exactly how much light bends. "
+    testprompt = "".join([i[0] + ' ' for i in word_durations])[:-1]
+    print("testprompt: " + testprompt)
+    # testprompt = "The last video I put out was about the index of refraction. It talked about why light slows down when it passes through a medium, and in particular, why the rate of slowdown would depend on color. It turns out people have a lot of questions about the index of refraction, and in this supplemental video I wanted to take a chance to answer a couple of them. For example, how is it possible for this index to be lower than one, which seems to imply that light would travel faster than the speed of light through some materials. To kick things off though, I want to take a question that does not require too much background, asked by Kevin O'Toole, which is why exactly light slowing down would imply that it bends as it enters a medium. There's a common analogy, which is to think of something like a car or a tank, where it turns a little bit while one side of it slows down before the other, and although it's a very visceral and memorable analogy, it's not like light has wheels, and it also tells you nothing about how to be more quantitative. Derive the formula describing exactly how much light bends. "
     description = summarize_prompt(testprompt, client)
     caption = testprompt
     lip_reading = testprompt
@@ -113,8 +130,11 @@ def upload_video():
     category = get_category(description, client)
     with app.app_context():
         db.session.add(categories(video_id=video_id, user_id=user_id, category=category))
-        db.session.add(videos(video_id=video_id, user_id=user_id, url=video_url, caption=caption, lip_reading=lip_reading, thumbnail_url=thumbnail_url, description=description))
+        db.session.add(videos(video_id=video_id, user_id=user_id, url=video_url, caption=word_durations, lip_reading=lip_reading, thumbnail_url=thumbnail_url, description=description))
         db.session.commit()
+
+    # return json
+    return json.dumps({video_id:video_id}), 200
     return json.dumps({"description": description, "thumbnail_url": thumbnail_url}), 200
 
 @app.route('/delete_video', methods=['DELETE'])

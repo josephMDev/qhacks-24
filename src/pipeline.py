@@ -27,7 +27,7 @@ class VideoAudioProcessesor():
 
     def loadIsoWav(self, noisyWavPath:str, isoChannel:int=1):
         try:
-            baseName = noisyWavPath[17:-4] + "_est" + str(isoChannel) + ".wav"
+            baseName = noisyWavPath[13:-4] + "_est" + str(isoChannel) + ".wav"
         # Get the list of items in the directory
             files = listdir('./data/output/')
 

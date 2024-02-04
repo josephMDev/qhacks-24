@@ -40,6 +40,7 @@ def get_image(description, client):
     size="256x256"
     )
 
+    print(description)
     print("!!!!!")
     print(response)
     print("!!!!!")

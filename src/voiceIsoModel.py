@@ -18,7 +18,7 @@ class PreTrainedModel():
         self.model = BaseModel.from_pretrained(self.pretrained_m)
     
     def sepAudio(self, inFile : str, overwrite : bool = True, rs : bool = True):
-        self.model.separate(inFile,force_overwrite=overwrite,resample=rs,output_dir="./src/data/output/")
+        self.model.separate(inFile,force_overwrite=overwrite,resample=rs,output_dir="./data/output/")
 
 #HOW TO CALL:
 #ptModel = PreTrainedModel()
