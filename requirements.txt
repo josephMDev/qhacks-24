@@ -2,7 +2,6 @@ scipy
 pandas
 flask
 librosa
-os
 soundfile
 asteroid
 ffmpeg-python
