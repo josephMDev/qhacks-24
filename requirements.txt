@@ -10,5 +10,6 @@ pydub
 sqlalchemy=1.4.41
 flask_sqlalchemy
 openai
-json
 uuid
+requests
+PIL

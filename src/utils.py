@@ -46,4 +46,3 @@ def get_image(description, client):
     print("!!!!!")
 
     return response.data[0].url
-

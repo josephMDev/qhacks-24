@@ -1,5 +1,5 @@
 import json
-from flask import Flask, request
+from flask import Flask, request, current_app
 from sqlalchemy import create_engine
 import uuid
 import os
@@ -11,6 +11,10 @@ from pipeline import VideoAudioProcessesor
 
 from openai import OpenAI
 client = OpenAI(api_key="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")
+
+import requests
+from PIL import Image
+from io import BytesIO
 
 user = 'root'
 password = 'test'
@@ -114,28 +118,36 @@ def upload_video():
 
 
     # MULTITHREAD THESE
-    vpe.recodeMp4(f'./data/input/{video_id}_muted.mp4', iso_wav_1, f'./data/output/{video_id}_merged.mp4')
+    final_url = f'./static/output/{video_id}_merged.mp4'
+    vpe.recodeMp4(f'./data/input/{video_id}_muted.mp4', iso_wav_1, final_url)
     word_durations = transcribe(iso_wav_1)
 
     print(user_id, video_url)
 
     testprompt = "".join([i[0] + ' ' for i in word_durations])[:-1]
     print("testprompt: " + testprompt)
-    # testprompt = "The last video I put out was about the index of refraction. It talked about why light slows down when it passes through a medium, and in particular, why the rate of slowdown would depend on color. It turns out people have a lot of questions about the index of refraction, and in this supplemental video I wanted to take a chance to answer a couple of them. For example, how is it possible for this index to be lower than one, which seems to imply that light would travel faster than the speed of light through some materials. To kick things off though, I want to take a question that does not require too much background, asked by Kevin O'Toole, which is why exactly light slowing down would imply that it bends as it enters a medium. There's a common analogy, which is to think of something like a car or a tank, where it turns a little bit while one side of it slows down before the other, and although it's a very visceral and memorable analogy, it's not like light has wheels, and it also tells you nothing about how to be more quantitative. Derive the formula describing exactly how much light bends. "
     description = summarize_prompt(testprompt, client)
     caption = testprompt
     lip_reading = testprompt
     thumbnail_url = get_image(description, client)
+    
+    response = requests.get(thumbnail_url)
+
+    
+    if response.status_code == 200:
+        img = Image.open(BytesIO(response.content))
+        img.save(f'./static/thumbnails/{video_id}.png')
+    else:
+        print(f"!!!\nFailed to download image. Status code: {response.status_code}\n!!!")
 
     category = get_category(description, client)
     with app.app_context():
         db.session.add(categories(video_id=video_id, user_id=user_id, category=category))
-        db.session.add(videos(video_id=video_id, user_id=user_id, url=video_url, caption=word_durations, lip_reading=lip_reading, thumbnail_url=thumbnail_url, description=description))
+        db.session.add(videos(video_id=video_id, user_id=user_id, url=final_url, caption=word_durations, lip_reading=lip_reading, thumbnail_url=thumbnail_url, description=description))
         db.session.commit()
-
-    # return json
+    
     return json.dumps({video_id:video_id}), 200
-    return json.dumps({"description": description, "thumbnail_url": thumbnail_url}), 200
+    # return json.dumps({"description": description, "thumbnail_url": thumbnail_url}), 200
 
 @app.route('/delete_video', methods=['DELETE'])
 def delete_video():
@@ -226,12 +238,13 @@ def star():
             stars.query.filter(stars.video_id == video_id).delete()
             db.session.commit()
 
+@app.route('/get_media', methods=['GET'])
+def get_media():
+    return current_app.send_static_file('./thumbnails/joe.png')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
-
-
-
-# TEST THIS OUT ON QUEENS WIFI TOMORROW
     
 """ USAGE (do in a different python file):
 import requests
