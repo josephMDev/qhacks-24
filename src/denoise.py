@@ -15,9 +15,9 @@ def main():
     #               "/denoise_model/data/sp04_babble_sn10.wav", 
      #              "/denoise_model/data/sp06_babble_sn5.wav", 
      #              "/denoise_model/data/sp09_babble_sn10.wav"]
-    input_files = ["./src/data/input/test_mono.wav"]
+    input_files = ["./src/data/input/mix4.wav"]
 
-    output_files = ["./src/data/output/test_DN_mono.wav"]
+    output_files = ["./src/data/output/test_DN_mix4.wav"]
     
     for i in range(len(input_files)) :
         #clean_file = clean_files[i]

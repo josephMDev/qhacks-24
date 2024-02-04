@@ -5,3 +5,4 @@ librosa
 os
 soundfile
 asteroid
+ffmpeg-python
