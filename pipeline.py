@@ -6,8 +6,6 @@ class VideoAudioProcessesor():
     def __init__(self, vidFile:str):
         #assume correct path is given
         self._inVid = ffmpeg.input(vidFile)
-        #TODO: CHANGE THIS VARIABLE TO YOUR SPECIFIC PATH
-        self._ffmpegPath = ""
 
     def mp4ToWav(self, audOutPath:str):
         try:
@@ -25,8 +23,8 @@ class VideoAudioProcessesor():
         out.run()
     
 
-vpe = VideoAudioProcessesor('./data/input/curry_interview.mp4')
-vpe.mp4ToWav('./data/input/curry.wav')
+vpe = VideoAudioProcessesor('./src/data/input/curry_interview.mp4')
+vpe.mp4ToWav('./src/data/input/curry.wav')
 
     # maybe do something like below (async):
 """
