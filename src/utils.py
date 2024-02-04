@@ -29,7 +29,7 @@ def get_category(sum, client):
         ]
     )
 
-    return f"Category: {final.choices[0].message.content}"
+    return final.choices[0].message.content
 
 def get_image(description, client):
     response = client.images.generate(

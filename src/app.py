@@ -184,18 +184,16 @@ def delete_video():
 """
 @app.route('/get_info', methods=['GET'])
 def get_info():
-    data = request.get_json()
-    user_id = list(data.values())[0]
+    user_id = request.args.get('user_id')
     print(user_id)
-    starred = stars.query.filter_by(user_id=user_id).all()
-
+    starred = [star.video_id for star in stars.query.filter_by(user_id=user_id).all()]
+    print("!!!!")
     print(starred)
     # Join videos and categories tables
     query = db.session.query(categories, videos).join(videos, categories.video_id == videos.video_id)
 
     # Execute the query and fetch results
     results = query.all()
-    print("RESULTS",results)
 
     # Initialize a dictionary to store the result in the desired format
     category_video_dict = {}
@@ -223,20 +221,18 @@ def get_info():
 
 @app.route('/star', methods=['PUT'])
 def star():
-    data = request.get_json()
-    user_id, video_id = list(data.values())
-    # get video id from json
-    # if video id is not in star list, add to star list
-    # if video id is in star list, remove from star list
-    exists = db.session.query(videos.id).filter_by(name=video_id).first() is not None
+    user_id = request.args.get('user_id')
+    video_id = request.args.get('video_id')
+    exists = bool(stars.query.filter(stars.video_id == video_id, stars.user_id == user_id).first())
     if not exists:
         with app.app_context():
             db.session.add(stars(user_id=user_id, video_id=video_id))
             db.session.commit()
     else:
         with app.app_context():
-            stars.query.filter(stars.video_id == video_id).delete()
+            stars.query.filter(stars.video_id == video_id, stars.user_id == user_id).delete()
             db.session.commit()
+    return json.dumps({"status": "success"}), 200
 
 @app.route('/get_media', methods=['GET'])
 def get_media():
