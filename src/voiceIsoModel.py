@@ -21,5 +21,5 @@ class PreTrainedModel():
         self.model.separate(inFile,force_overwrite=overwrite,resample=rs,output_dir="./src/data/output/")
 
 #HOW TO CALL:
-#ptModel = PreTrainedModel('mpariente/DPRNNTasNet-ks2_WHAM_sepclean')
+#ptModel = PreTrainedModel()
 #ptModel.sepAudio('./src/data/input/mix4.wav')
