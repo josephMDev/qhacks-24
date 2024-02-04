@@ -12,4 +12,4 @@ mixture = mixture.reshape(1, mixture.shape[0], mixture.shape[1])
 out_wavs = model.separate(mixture)
 '''
 # Or simply a file name:
-model.separate("./src/data/input/mix1.wav")
+model.separate("./src/data/input/mix7.wav",force_overwrite=True,resample=True,output_dir="./src/data/output/")
