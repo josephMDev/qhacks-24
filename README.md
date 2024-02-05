@@ -1,4 +1,4 @@
-# QHacks '24 : murmr
+# QHacks '24 Bayun Systems Challenge Winner :trophy: : murmr
 ## AI-Powered Audio Processing Suite (on mobile :iphone: :open_mouth:)
 
 * Noise Isolation Processing
