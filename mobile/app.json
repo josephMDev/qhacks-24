@@ -8,6 +8,12 @@
     "userInterfaceStyle": "light",
     "plugins": [
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow murmr to access your camera."
+        }
+      ],
+      [
         "react-native-auth0",
         {
           "domain": "dev-645ify6y.us.auth0.com"

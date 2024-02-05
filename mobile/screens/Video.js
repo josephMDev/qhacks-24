@@ -13,30 +13,21 @@ import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import { RNTabBar, RNTabBarOption } from "react-native-ios-tab-bar";
 
 export default VideoScreen = ({ navigation, route }) => {
-  const { description, isolatedCaption, lipreadCaption } = route.params;
+  console.log(route.params);
+  const { description, caption, url } = route.params;
+  const words = JSON.parse(caption);
   const video = useRef(null);
   const flatlistRef = useRef();
   const [status, setStatus] = useState({});
-  const [mode, setMode] = useState(0); // 0: isolated, 1: lipread
-  const [caption, setCaption] = useState(isolatedCaption);
   const [captionIndex, setCaptionIndex] = useState(0);
-  //current time in video state required
-
-  const toggleCaptions = (index) => {
-    setMode(index);
-    if (index === 1) {
-      setCaption(lipreadCaption);
-    } else {
-      setCaption(isolatedCaption);
-    }
-  };
+  console.log(words);
 
   const getIndex = () => {
-    for (let i = 0; i < caption.length; i++) {
-      section = caption[i];
+    for (let i = 0; i < words.length; i++) {
+      section = words[i];
       if (
-        section.start <= status.positionMillis &&
-        section.end > status.positionMillis
+        section[1] * 1000 <= status.positionMillis &&
+        section[1] * 1000 + 5000 > status.positionMillis
       ) {
         return i;
       }
@@ -47,17 +38,17 @@ export default VideoScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={{}} onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <MaterialIcon name="arrow-back-ios" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Transcription</Text>
+        <Text style={styles.headerText}>Transcript</Text>
       </View>
       <Text style={styles.description}>{description}</Text>
       <Video
         ref={video}
         style={styles.video}
         source={{
-          uri: "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+          uri: `http://10.216.63.251:5001/get_media?url=${url}`,
         }}
         useNativeControls
         resizeMode={ResizeMode.CONTAIN}
@@ -76,7 +67,7 @@ export default VideoScreen = ({ navigation, route }) => {
         }}
       />
       <View>
-        <RNTabBar
+        {/* <RNTabBar
           width={390}
           height={40}
           backgroundColor="rgba(0,0,0,0.08)"
@@ -103,28 +94,28 @@ export default VideoScreen = ({ navigation, route }) => {
               Lip-read Captions
             </Text>
           </RNTabBarOption>
-        </RNTabBar>
+        </RNTabBar> */}
         <View
           style={{
-            height: 444,
+            height: 544,
             marginHorizontal: 20,
             marginBottom: 20,
           }}>
           <FlatList
             ref={flatlistRef}
-            data={caption}
-            renderItem={({ item }) => {
-              active =
-                item.start <= status.positionMillis &&
-                item.end > status.positionMillis;
+            data={words}
+            renderItem={({ item, index }) => {
+              let active =
+                item[1] * 1000 <= status.positionMillis &&
+                item[1] * 1000 + 5000 > status.positionMillis;
               return (
                 <Text
-                  key={item.start}
+                  key={`${item[1]}`}
                   style={[
                     styles.caption,
                     { color: active ? "black" : "rgba(0,0,0,0.4)" },
                   ]}>
-                  {item.text}
+                  {item[0]}
                 </Text>
               );
             }}
@@ -149,7 +140,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   headerText: {
-    fontWeight: "700",
+    fontWeight: "800",
     fontSize: 34,
   },
   video: {

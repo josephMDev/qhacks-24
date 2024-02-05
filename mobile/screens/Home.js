@@ -4,157 +4,236 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Animated,
+  RefreshControl,
   ScrollView,
   Image,
+  ImageBackground,
 } from "react-native";
 import FontAwesome6Icon from "react-native-vector-icons/FontAwesome6";
-import LinearGradient from "expo-linear-gradient";
+import FontAwesomeIcon from "react-native-vector-icons/FontAwesome";
+import { LinearGradient } from "expo-linear-gradient";
+import { getUser, toggleStar } from "../api/api";
 
 export default HomeScreen = ({ navigation }) => {
-  // hard coded for now
-  (sampleVideo = {
-    id: 0,
-    url: "https://media.istockphoto.com/id/1465604391/video/young-woman-talks-with-therapist-during-theray-session.mp4?s=mp4-640x640-is&k=20&c=p1WTvSpuEhiRGj6yjRD8bC7ds99aYfZ3bY_Vbrc_Q7I=",
-    thumbnail:
-      "https://st4.depositphotos.com/13194036/31587/i/450/depositphotos_315873928-stock-photo-selective-focus-happy-businessman-glasses.jpg",
-    description:
-      "this should be some ai generated description kinda just describing the video, not too long i guess about 30 words i think",
-    length: 108, //in s
-    isolatedCaption: [
-      {
-        start: 0, // in ms
-        end: 5000,
-        text: "isolated: first 5 seconds this is what was said",
-      },
-      {
-        start: 5000, // in ms
-        end: 15000,
-        text: "isolated: next 10 seconds this is pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long",
-      },
-      {
-        start: 15000, // in ms
-        end: 28000,
-        text: "isolated: until the end this again  is pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long",
-      },
-    ],
-    lipreadCaption: [
-      {
-        start: 0, // in ms
-        end: 5000,
-        text: "lipread: first 5 seconds this is what was said",
-      },
-      {
-        start: 5000, // in ms
-        end: 15000,
-        text: "lipread: next 10 seconds this is pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long",
-      },
-      {
-        start: 15000, // in ms
-        end: 28000,
-        text: "lipread: until the end this again  is pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long pretty long",
-      },
-    ],
-  }),
-    (videos = [
-      sampleVideo,
-      {
-        ...sampleVideo,
-        id: 1,
-      },
-      {
-        ...sampleVideo,
-        id: 2,
-      },
-      {
-        ...sampleVideo,
-        id: 3,
-      },
-      {
-        ...sampleVideo,
-        id: 4,
-      },
-      {
-        ...sampleVideo,
-        id: 5,
-      },
-    ]);
-  // starred is just a list of video ids
-  starred = [1, 3];
+  const [refreshing, setRefreshing] = useState(false);
+  const [videos, setVideos] = useState({});
+  const [starred, setStarred] = useState([]);
 
-  const [header, setHeader] = useState("Starred");
-  const handleScroll = (e) => {
-    console.log(e.nativeEvent.contentOffset.y);
-    if (e.nativeEvent.contentOffset.y > 250) {
-      setHeader("Videos");
-    } else {
-      setHeader("Starred");
+  useEffect(() => {
+    async function fetchData() {
+      let user = await getUser();
+      console.log(user);
+      setVideos(user.videos);
+      setStarred(user.starred);
     }
+    fetchData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    let user = await getUser();
+    console.log(user.videos);
+    setVideos(user.videos);
+    setStarred(user.starred);
+    setRefreshing(false);
+  }, []);
+
+  const changeStar = async (id) => {
+    await toggleStar(id);
+    if (starred.includes(id)) {
+      setStarred(starred.filter((star) => star !== id));
+    } else {
+      setStarred([...starred, id]);
+    }
+  };
+
+  const deleteVideo = (id) => {
+    // calls API to delete video
+  };
+
+  const getBookmarkIcon = (id, size = 24, outlineColor = "black") => {
+    if (starred.includes(id)) {
+      return <FontAwesomeIcon name="bookmark" size={size} color={"gold"} />;
+    } else {
+      return (
+        <FontAwesomeIcon name="bookmark-o" size={size} color={outlineColor} />
+      );
+    }
+  };
+
+  const getStarVideos = () => {
+    let starVideos = [];
+    Object.entries(videos).forEach((categoryVideos) => {
+      starVideos.push(
+        ...categoryVideos[1].filter((video) => starred.includes(video.video_id))
+      );
+    });
+    return starVideos.map((video) => {
+      return (
+        <TouchableOpacity
+          key={video.video_id}
+          onPress={() => navigation.navigate("Video", { ...video })}>
+          <ImageBackground
+            source={{
+              uri: `http://10.216.63.251:5001/get_media?url=${video.thumbnail_url}`,
+            }}
+            style={styles.starredVideo}
+            imageStyle={styles.starredThumbnail}>
+            <TouchableOpacity
+              onPress={() => {
+                changeStar(video.video_id);
+              }}
+              style={{ padding: 16 }}>
+              {getBookmarkIcon(video.video_id, 34, "white")}
+            </TouchableOpacity>
+            <LinearGradient
+              style={{
+                position: "absolute",
+                bottom: 0,
+                width: 340,
+                height: 100,
+                borderBottomLeftRadius: 20,
+                borderBottomRightRadius: 20,
+              }}
+              colors={[
+                "rgba(0,0,0,0)",
+                "rgba(0,0,0,0.7)",
+                "rgba(0,0,0,0.7)",
+                "rgba(0,0,0,0.8)",
+                "rgba(0,0,0,0.9)",
+              ]}
+            />
+            <Text
+              style={{
+                position: "absolute",
+                bottom: 0,
+                color: "rgba(255,255,255,0.9)",
+                paddingHorizontal: 20,
+                paddingBottom: 16,
+                fontWeight: "bold",
+              }}
+              numberOfLines={3}>
+              {video.description}
+            </Text>
+            <View style={{ width: "100%" }}></View>
+          </ImageBackground>
+        </TouchableOpacity>
+      );
+    });
+  };
+
+  const getVideos = (videos) => {
+    return videos.map((video) => {
+      return (
+        <TouchableOpacity
+          key={video.video_id}
+          onPress={() => navigation.navigate("Video", { ...video })}>
+          <View style={styles.video}>
+            <Image
+              source={{
+                uri: `http://10.216.63.251:5001/get_media?url=${video.thumbnail_url}`,
+              }}
+              style={styles.videoThumbnail}
+            />
+            <View style={styles.videoDescriptionContainer}>
+              <Text style={styles.videoDescription} numberOfLines={3}>
+                {video.description}
+              </Text>
+              <View style={{ display: "flex", flexDirection: "row", gap: 12 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    changeStar(video.video_id);
+                  }}
+                  style={{
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}>
+                  <Text
+                    style={{ color: "rgba(0,0,0,0.3)", fontWeight: "bold" }}>
+                    Save
+                  </Text>
+                  {getBookmarkIcon(video.video_id, 24, "rgba(0,0,0,0.2)")}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    deleteVideo(video.video_id);
+                  }}
+                  style={{
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}>
+                  <Text
+                    style={{ color: "rgba(0,0,0,0.3)", fontWeight: "bold" }}>
+                    Delete
+                  </Text>
+                  <FontAwesomeIcon
+                    name="trash-o"
+                    size={24}
+                    color={"rgba(0,0,0,0.2)"}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    });
+  };
+
+  const getCategories = () => {
+    let categories = [];
+    Object.entries(videos).forEach((categoryVideos) => {
+      categories.push(
+        <>
+          <Text style={styles.videosText}>
+            {categoryVideos[0]}
+            {/* {header === "Videos" ? " " : "Videos"} */}
+          </Text>
+          {getVideos(categoryVideos[1])}
+        </>
+      );
+    });
+    return categories;
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>{header}</Text>
-        <TouchableOpacity>
+        <Text style={styles.headerText}>Videos</Text>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("SettingsModal");
+          }}>
           <FontAwesome6Icon name="bars-staggered" size={22} color={"black"} />
         </TouchableOpacity>
       </View>
-      <ScrollView scrollEventThrottle={4} onScroll={handleScroll}>
-        <View style={{ height: 260 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.starredVideosContainer}>
-            {videos
-              .filter((video) => video.id in starred)
-              .map((video) => {
-                return (
-                  <View key={video.id} style={styles.starredVideo}>
-                    <Image
-                      source={{ uri: video.thumbnail }}
-                      style={styles.starredThumbnail}
-                    />
-                    {/* <LinearGradient
-                      colors={["#00000000", "#000000"]}
-                      style={{
-                        height: "100%",
-                        width: "100%",
-                      }}></LinearGradient> */}
-                  </View>
-                );
-              })}
-          </ScrollView>
-        </View>
-        <Text style={styles.videosText}>
-          {header === "Videos" ? " " : "Videos"}
-        </Text>
-        <View style={styles.videosContainer}>
-          {videos.map((video) => {
-            return (
-              <TouchableOpacity
-                key={video.id}
-                onPress={() => navigation.navigate("Video", { ...video })}>
-                <View style={styles.video}>
-                  <Image
-                    source={{ uri: video.thumbnail }}
-                    style={styles.videoThumbnail}
-                  />
-                  <View style={styles.videoDescriptionContainer}>
-                    <Text style={styles.videoDescription} numberOfLines={3}>
-                      {video.description}
-                    </Text>
-                    <Text style={styles.videoLength}>
-                      {video.length} seconds
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {starred.length > 0 && (
+          <View style={{ height: 260 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.starredVideosContainer}>
+              {getStarVideos()}
+            </ScrollView>
+          </View>
+        )}
+        <View style={styles.videosContainer}>{getCategories()}</View>
       </ScrollView>
-      <TouchableOpacity style={styles.uploadButton}>
+      <TouchableOpacity
+        style={styles.uploadButton}
+        onPress={() => {
+          navigation.navigate("Camera");
+        }}>
         <FontAwesome6Icon name="camera" size={36} color={"white"} />
       </TouchableOpacity>
     </View>
@@ -176,19 +255,19 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   headerText: {
-    fontWeight: "700",
+    fontWeight: "800",
     fontSize: 34,
   },
   starredVideosContainer: {
     flexGrow: 1,
     paddingHorizontal: 20,
     gap: 20,
+    marginTop: 6,
   },
   starredVideo: {
     height: 220,
     width: 340,
     borderRadius: 20,
-    backgroundColor: "red",
     display: "flex",
   },
   starredThumbnail: {
@@ -197,6 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   videosContainer: {
+    marginTop: -20,
     marginBottom: 20,
     marginHorizontal: 20,
     gap: 10,
@@ -213,14 +293,13 @@ const styles = StyleSheet.create({
   videosText: {
     fontWeight: "700",
     fontSize: 24,
-    marginBottom: 10,
-    marginHorizontal: 20,
+    marginTop: 20,
   },
   videoThumbnail: {
     width: 90,
     height: 90,
     borderRadius: 15,
-    backgroundColor: "red",
+    backgroundColor: "#3b8b7e",
   },
   videoDescription: {
     fontWeight: 600,
@@ -228,10 +307,6 @@ const styles = StyleSheet.create({
   },
   videoDescriptionContainer: {
     gap: 6,
-  },
-  videoLength: {
-    color: "rgba(0,0,0,0.25)",
-    width: 280,
   },
   uploadButton: {
     position: "absolute",
