@@ -10,7 +10,7 @@ from transcription import transcribe
 from pipeline import VideoAudioProcessesor
 
 from openai import OpenAI
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="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")
 
 import requests
 from PIL import Image
@@ -118,32 +118,31 @@ def upload_video():
 
 
     # MULTITHREAD THESE
-    final_url = f'./static/output/{video_id}_merged.mp4'
-    vpe.recodeMp4(f'./data/input/{video_id}_muted.mp4', iso_wav_1, final_url)
-    word_durations = transcribe(iso_wav_1)
+    final_url = f'output/{video_id}_merged.mp4'
+    vpe.recodeMp4(f'./data/input/{video_id}_muted.mp4', iso_wav_1, f'./static/{final_url}')
+    word_lines = transcribe(iso_wav_1)[:]
 
     print(user_id, video_url)
 
-    testprompt = "".join([i[0] + ' ' for i in word_durations])[:-1]
+    testprompt = "".join([i[0] + ' ' for i in word_lines])[:-1]
     print("testprompt: " + testprompt)
     description = summarize_prompt(testprompt, client)
-    caption = testprompt
     lip_reading = testprompt
     thumbnail_url = get_image(description, client)
     
     response = requests.get(thumbnail_url)
-
     
     if response.status_code == 200:
         img = Image.open(BytesIO(response.content))
-        img.save(f'./static/thumbnails/{video_id}.png')
+        final_thumbnail_url = f'thumbnails/{video_id}.png'
+        img.save(f'./static/{final_thumbnail_url}')
     else:
         print(f"!!!\nFailed to download image. Status code: {response.status_code}\n!!!")
 
     category = get_category(description, client)
     with app.app_context():
         db.session.add(categories(video_id=video_id, user_id=user_id, category=category))
-        db.session.add(videos(video_id=video_id, user_id=user_id, url=final_url, caption=word_durations, lip_reading=lip_reading, thumbnail_url=thumbnail_url, description=description))
+        db.session.add(videos(video_id=video_id, user_id=user_id, url=final_url, caption=json.dumps(word_lines), lip_reading=lip_reading, thumbnail_url=final_thumbnail_url, description=description))
         db.session.commit()
     
     return json.dumps({video_id:video_id}), 200
@@ -236,7 +235,8 @@ def star():
 
 @app.route('/get_media', methods=['GET'])
 def get_media():
-    return current_app.send_static_file('./thumbnails/joe.png')
+    url = request.args.get('url')
+    return current_app.send_static_file(url)
 
 
 if __name__ == '__main__':

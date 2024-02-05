@@ -5,7 +5,7 @@ librosa
 soundfile
 asteroid
 ffmpeg-python
-speech_recognition
+SpeechRecognition
 pydub
 sqlalchemy=1.4.41
 flask_sqlalchemy
